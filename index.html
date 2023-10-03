@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat con Socket.IO</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        form input,
+        form button {
+            margin: 5px;
+            padding: 5px;
+            width: 200px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mensaje-info {
+            display: flex;
+            align-items: flex-start;
+            margin: 10px;
+        }
+
+        .hora {
+            color: #888;
+            margin-left: 25px;
+        }
+
+        .contenido-mensaje {
+            display: flex;
+            margin-top: 18px;
+            margin-left: 10px;
+        }
+
+        /* Estilos para mensajes del chat 1 */
+       /* Estilos para mensajes del chat 1 */
+.mensaje-chat-1 {
+    text-align: right; /* Alinea a la derecha */
+    margin-bottom: 50px;
+     /* Agrega un margen inferior para separar los mensajes */
+}
+
+/* Estilos para mensajes del chat 2 */
+.mensaje-chat-2 {
+    text-align: left; /* Alinea a la izquierda */
+    margin-bottom: 100px; 
+    margin-left: 80px;/* Agrega un margen inferior para separar los mensajes */
+}
+
+
+        /* Estilos para la imagen de perfil */
+        .perfil img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat 1</h1>
+    <form onsubmit="return enviarMensaje1()">
+        <input id="nombre1" placeholder="Nombre" autocomplete="off" required />
+        <input id="imagen1" placeholder="URL de imagen de perfil" autocomplete="off" required />
+        <input id="mensaje1" placeholder="Mensaje" autocomplete="off" required />
+        <button>Enviar</button>
+    </form>
+
+    <h1>Chat 2</h1>
+    <form onsubmit="return enviarMensaje2()">
+        <input id="nombre2" placeholder="Nombre" autocomplete="off" required />
+        <input id="imagen2" placeholder="URL de imagen de perfil" autocomplete="off" required />
+        <input id="mensaje2" placeholder="Mensaje" autocomplete="off" required />
+        <button>Enviar</button>
+    </form>
+
+    <h1>Mensajes</h1>
+    <ul id="lista-mensajes1"></ul>
+    <ul id="lista-mensajes2"></ul>
+
+    <script>
+        // Conexión de Socket.IO al servidor
+        var socket = io();
+
+        // Función para enviar mensajes del chat 1
+        function enviarMensaje1() {
+            var nombre = document.getElementById('nombre1').value;
+            var mensaje = document.getElementById('mensaje1').value;
+            var imagenPerfil = document.getElementById('imagen1').value;
+            var hora = obtenerHoraActual();
+            socket.emit('chat message 1', { nombre, mensaje, imagenPerfil, hora });
+            document.getElementById('mensaje1').value = '';
+            return false;
+        }
+
+        // Función para enviar mensajes del chat 2
+        function enviarMensaje2() {
+            var nombre = document.getElementById('nombre2').value;
+            var mensaje = document.getElementById('mensaje2').value;
+            var imagenPerfil = document.getElementById('imagen2').value;
+            var hora = obtenerHoraActual();
+            socket.emit('chat message 2', { nombre, mensaje, imagenPerfil, hora });
+            document.getElementById('mensaje2').value = '';
+            return false;
+        }
+
+        // Función para obtener la hora actual en formato HH:MM:SS
+        function obtenerHoraActual() {
+            var ahora = new Date();
+            var horas = ahora.getHours().toString().padStart(2, '0');
+            var minutos = ahora.getMinutes().toString().padStart(2, '0');
+            var segundos = ahora.getSeconds().toString().padStart(2, '0');
+            return `${horas}:${minutos}:${segundos}`;
+        }
+
+        // Función para recibir mensajes del chat 1
+        socket.on('chat message 1', function(msg){
+            mostrarMensaje(msg, 'lista-mensajes1', 'mensaje-chat-1');
+        });
+
+        // Función para recibir mensajes del chat 2
+        socket.on('chat message 2', function(msg){
+            mostrarMensaje(msg, 'lista-mensajes2', 'mensaje-chat-2');
+        });
+
+    
+    function mostrarMensaje(msg, listaId, claseMensaje) {
+    var listaMensajes = document.getElementById(listaId);
+    var mensaje = document.createElement('li');
+    mensaje.classList.add(claseMensaje); // Agrega una clase al mensaje
+    var mensajeHTML = `
+        <div class="mensaje-info">
+            <div class="perfil">
+                <img src="${msg.imagenPerfil}" alt="Foto de perfil">
+                <span>${msg.nombre}</span>
+            </div>
+            <div class="contenido-mensaje">
+                <div class="mensaje-text">${msg.mensaje}</div>
+                <div class="hora">${msg.hora}</div>
+            </div>
+        </div>
+    `;
+    mensaje.innerHTML = mensajeHTML;
+    listaMensajes.insertAdjacentHTML('beforeend', mensaje.outerHTML); // Agrega el nuevo mensaje al final de la lista
+}
+
+
+    </script>
+</body>
+</html>
